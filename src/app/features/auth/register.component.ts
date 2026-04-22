@@ -1,17 +1,22 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
-import { AuthService, LoginDto } from './auth.service';
+import { RouterLink } from '@angular/router';
+import { AuthService, RegisterDto } from '../../core/services/auth.service';
 
 @Component({
-  selector: 'app-login',
+  selector: 'app-register',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink],
   template: `
     <div class="auth-page">
-      <h1>Login</h1>
-      <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
+      <h1>Register</h1>
+      <form (ngSubmit)="onSubmit()" #registerForm="ngForm">
+        <label>
+          Username
+          <input type="text" name="username" [(ngModel)]="dto.username" required />
+        </label>
+
         <label>
           Email
           <input type="email" name="email" [(ngModel)]="dto.email" required />
@@ -19,18 +24,18 @@ import { AuthService, LoginDto } from './auth.service';
 
         <label>
           Password
-          <input type="password" name="password" [(ngModel)]="dto.password" required />
+          <input type="password" name="password" [(ngModel)]="dto.password" required minlength="6" />
         </label>
 
-        <button type="submit" [disabled]="loginForm.invalid">Login</button>
+        <button type="submit" [disabled]="registerForm.invalid">Register</button>
       </form>
 
       <div class="message" *ngIf="message">{{ message }}</div>
       <div class="error" *ngIf="error">{{ error }}</div>
 
       <p>
-        Need an account?
-        <a routerLink="/register">Register</a>
+        Already have an account?
+        <a routerLink="/login">Login</a>
       </p>
     </div>
   `,
@@ -103,8 +108,9 @@ import { AuthService, LoginDto } from './auth.service';
     `
   ]
 })
-export class LoginComponent {
-  dto: LoginDto = {
+export class RegisterComponent {
+  dto: RegisterDto = {
+    username: '',
     email: '',
     password: ''
   };
@@ -112,25 +118,17 @@ export class LoginComponent {
   message = '';
   error = '';
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(private authService: AuthService) {}
 
   onSubmit(): void {
     this.message = '';
     this.error = '';
 
-    this.authService.login(this.dto).subscribe({
-      next: (response) => {
-        localStorage.setItem('accessToken', response.accessToken);
-        localStorage.setItem('refreshToken', response.refreshToken);
-
-        const role = this.authService.getRoleFromToken(response.accessToken);
-        localStorage.setItem('userRole', role ?? '');
-
-        const targetRoute = role === 'Admin' ? '/admin' : '/products';
-        this.router.navigateByUrl(targetRoute);
-      },
-      error: (err) => {
-        this.error = err?.error || 'Login failed. Check credentials and try again.';
+    this.authService.register(this.dto).subscribe({
+      next: (result) => {
+        this.message = 'User registered successfully!';
+        // Clear form after successful registration
+        this.dto = { username: '', email: '', password: '' };
       }
     });
   }

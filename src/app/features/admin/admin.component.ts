@@ -2,8 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { AuthService } from './core/services/auth.service';
-import { ProductService } from './core/services/product.service';
+import { AuthService } from '../../core/services/auth.service';
+import { ProductService } from '../../core/services/product.service';
 
 interface Product {
   id: string;
